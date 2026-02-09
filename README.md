@@ -1,2 +1,2 @@
 # BanjirAid
-This my KitaHack project that me and my teammates are going to build here in this repository
+BanjirAid — Flood help request, AI triage (Google AI Studio/Gemini), and responder dispatch system for KitaHack.
