@@ -1,3 +1,6 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -6,6 +9,63 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val repoSecretsFile = rootProject.file("../../../local-secrets/firebase.properties")
+val fallbackLocalPropertiesFile = rootProject.file("local.properties")
+val googleServicesTemplateFile = file("google-services.template.json")
+val googleServicesJsonFile = file("google-services.json")
+
+fun loadProperties(propsFile: File): Properties {
+    val props = Properties()
+    propsFile.inputStream().use { props.load(it) }
+    return props
+}
+
+fun resolveFirebaseApiKey(): String {
+    val keyFromSecrets = if (repoSecretsFile.exists()) {
+        loadProperties(repoSecretsFile).getProperty("FIREBASE_API_KEY")
+    } else {
+        null
+    }
+
+    val keyFromLocalProperties = if (fallbackLocalPropertiesFile.exists()) {
+        loadProperties(fallbackLocalPropertiesFile).getProperty("FIREBASE_API_KEY")
+    } else {
+        null
+    }
+
+    return (keyFromSecrets ?: keyFromLocalProperties ?: System.getenv("FIREBASE_API_KEY"))?.trim().orEmpty()
+}
+
+tasks.register("generateGoogleServicesJson") {
+    inputs.file(googleServicesTemplateFile)
+    outputs.file(googleServicesJsonFile)
+
+    doLast {
+        if (!googleServicesTemplateFile.exists()) {
+            throw GradleException("Missing template: ${googleServicesTemplateFile.path}")
+        }
+
+        val key = resolveFirebaseApiKey()
+        if (key.isEmpty()) {
+            throw GradleException(
+                "FIREBASE_API_KEY is missing. Add it to local-secrets/firebase.properties, android/local.properties, or env var FIREBASE_API_KEY."
+            )
+        }
+
+        val marker = "__FIREBASE_API_KEY__"
+        val template = googleServicesTemplateFile.readText()
+        if (!template.contains(marker)) {
+            throw GradleException("google-services.template.json must contain the marker __FIREBASE_API_KEY__")
+        }
+
+        googleServicesJsonFile.writeText(template.replace(marker, key))
+    }
+}
+
+tasks.matching { it.name.endsWith("GoogleServices") }.configureEach {
+    dependsOn("generateGoogleServicesJson")
 }
 
 android {

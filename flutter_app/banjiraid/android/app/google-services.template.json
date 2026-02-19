@@ -20,7 +20,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAqv5Z6YKdmvujv5PceJTlA3mCaazquB34"
+          "current_key": "__FIREBASE_API_KEY__"
         }
       ],
       "services": {
@@ -49,7 +49,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAqv5Z6YKdmvujv5PceJTlA3mCaazquB34"
+          "current_key": "__FIREBASE_API_KEY__"
         }
       ],
       "services": {
