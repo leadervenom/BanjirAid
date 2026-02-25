@@ -1,0 +1,36 @@
+name: banjiraid
+description: "Flood Emergency Triage & Dispatch System for BanjirAid"
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase - MOVED HERE FROM BOTTOM
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  
+  # Location
+  geolocator: ^10.1.0
+  
+  # Utils
+  intl: ^0.18.1
+  
+  # UI
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+

@@ -1,0 +1,2 @@
+# Local secrets for Android build. Do not commit real values.
+FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY_HERE
