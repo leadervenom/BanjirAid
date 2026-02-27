@@ -108,10 +108,15 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('You must be signed in to submit a request');
+      }
+      final uid = user.uid;
       final ticketData = {
+        'createdBy': uid,
         'created_at': FieldValue.serverTimestamp(),
         'updated_at': FieldValue.serverTimestamp(),
-        'reporter_email': user?.email,
+        'reporter_email': user.email,
         'reporter_name': _nameController.text.trim().isEmpty
             ? null
             : _nameController.text.trim(),

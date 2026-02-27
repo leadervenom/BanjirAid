@@ -41,7 +41,7 @@ class MyRequestsScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('tickets')
-            .where('reporter_email', isEqualTo: user?.email)
+            .where('createdBy', isEqualTo: user?.uid)
             .orderBy('created_at', descending: true)
             .snapshots(),
         builder: (context, snapshot) {

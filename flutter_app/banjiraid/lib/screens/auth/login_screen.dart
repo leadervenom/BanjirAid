@@ -279,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(height: 8),
                           Text(
                             '• @admin email for Admin access\n'
-                            '• @rescue email for Rescue Team\n'
+                            '• @rescue email for Responder access\n'
                             '• Regular email for Citizen access',
                             style: TextStyle(
                               color: Colors.white70,

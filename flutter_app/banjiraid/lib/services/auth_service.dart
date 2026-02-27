@@ -1,13 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum UserRole {
   admin,
-  rescuer,
+  responder,
   citizen,
 }
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Get current user
   User? get currentUser => _auth.currentUser;
@@ -15,14 +17,14 @@ class AuthService {
   // Stream of auth state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Determine user role based on email
+  // Determine user role based on email (UI hint only).
   static UserRole getUserRole(String email) {
     final lowerEmail = email.toLowerCase();
     
     if (lowerEmail.contains('@admin')) {
       return UserRole.admin;
     } else if (lowerEmail.contains('@rescue')) {
-      return UserRole.rescuer;
+      return UserRole.responder;
     } else {
       return UserRole.citizen;
     }
@@ -45,6 +47,7 @@ class AuthService {
         email: email,
         password: password,
       );
+      await _ensureUserProfile(credential.user);
       return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
@@ -61,10 +64,49 @@ class AuthService {
         email: email,
         password: password,
       );
+      await _ensureUserProfile(credential.user);
       return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
+  }
+
+  Future<void> _ensureUserProfile(User? user) async {
+    if (user == null) return;
+
+    final userRef = _firestore.collection('users').doc(user.uid);
+    final userDoc = await userRef.get();
+    if (userDoc.exists) return;
+
+    await userRef.set({
+      'uid': user.uid,
+      'email': user.email,
+      'role': 'citizen',
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Citizen can submit verification details; role remains citizen until admin approval.
+  Future<void> submitResponderVerification({
+    required String organization,
+    required String responderId,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw 'You must be signed in.';
+    }
+
+    await _ensureUserProfile(user);
+
+    await _firestore.collection('users').doc(user.uid).set({
+      'responder': {
+        'organization': organization,
+        'responderId': responderId,
+        'verified': false,
+      },
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   // Sign out

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart'; // ADD THIS LINE
 import 'screens/auth/login_screen.dart';
 import 'screens/citizen/citizen_home_screen.dart';
 import 'screens/responder/responder_dashboard.dart';
 import 'screens/admin/admin_dashboard.dart';
-import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,17 +68,30 @@ class RoleBasedRouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final email = user.email?.toLowerCase() ?? '';
-    final role = AuthService.getUserRole(email);
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    switch (role) {
-      case UserRole.admin:
-        return const AdminDashboard();
-      case UserRole.rescuer:
-        return const ResponderDashboard();
-      case UserRole.citizen:
-        return const CitizenHomeScreen();
-    }
+        final role = snapshot.data?.data()?['role'] as String? ?? 'citizen';
+
+        switch (role) {
+          case 'admin':
+            return const AdminDashboard();
+          case 'responder':
+            return const ResponderDashboard();
+          default:
+            return const CitizenHomeScreen();
+        }
+      },
+    );
   }
 }
 
