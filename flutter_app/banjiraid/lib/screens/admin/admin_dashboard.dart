@@ -83,6 +83,11 @@ class _AdminDashboardState extends State<AdminDashboard>
 class OverviewTab extends StatelessWidget {
   const OverviewTab({Key? key}) : super(key: key);
 
+  String _stringField(DocumentSnapshot doc, String key) {
+    final data = doc.data() as Map<String, dynamic>?;
+    return (data?[key] ?? '').toString().toLowerCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -94,16 +99,20 @@ class OverviewTab extends StatelessWidget {
 
         final tickets = snapshot.data!.docs;
         final totalTickets = tickets.length;
-        final newTickets = tickets.where((t) => t['status'] == 'new').length;
+        final newTickets =
+            tickets.where((t) => _stringField(t, 'status') == 'new').length;
         final assignedTickets =
-            tickets.where((t) => t['status'] == 'assigned').length;
+            tickets.where((t) => _stringField(t, 'status') == 'assigned').length;
         final enRouteTickets =
-            tickets.where((t) => t['status'] == 'en_route').length;
+            tickets.where((t) => _stringField(t, 'status') == 'en_route').length;
         final resolvedTickets =
-            tickets.where((t) => t['status'] == 'resolved').length;
-        final p1Tickets = tickets.where((t) => t['priority'] == 'p1').length;
-        final p2Tickets = tickets.where((t) => t['priority'] == 'p2').length;
-        final p3Tickets = tickets.where((t) => t['priority'] == 'p3').length;
+            tickets.where((t) => _stringField(t, 'status') == 'resolved').length;
+        final p1Tickets =
+            tickets.where((t) => _stringField(t, 'priority') == 'p1').length;
+        final p2Tickets =
+            tickets.where((t) => _stringField(t, 'priority') == 'p2').length;
+        final p3Tickets =
+            tickets.where((t) => _stringField(t, 'priority') == 'p3').length;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),

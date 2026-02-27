@@ -15,6 +15,11 @@ class _ResponderDashboardState extends State<ResponderDashboard> {
   String _selectedFilter = 'all';
   String _selectedPriority = 'all';
 
+  String _stringField(DocumentSnapshot doc, String key) {
+    final data = doc.data() as Map<String, dynamic>?;
+    return (data?[key] ?? '').toString().toLowerCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,13 +142,13 @@ class _ResponderDashboardState extends State<ResponderDashboard> {
 
         final tickets = snapshot.data!.docs;
         final newCount =
-            tickets.where((t) => t['status'] == 'new').length;
+            tickets.where((t) => _stringField(t, 'status') == 'new').length;
         final assignedCount =
-            tickets.where((t) => t['status'] == 'assigned').length;
+            tickets.where((t) => _stringField(t, 'status') == 'assigned').length;
         final enRouteCount =
-            tickets.where((t) => t['status'] == 'en_route').length;
+            tickets.where((t) => _stringField(t, 'status') == 'en_route').length;
         final p1Count =
-            tickets.where((t) => t['priority'] == 'p1').length;
+            tickets.where((t) => _stringField(t, 'priority') == 'p1').length;
 
         return Row(
           children: [
