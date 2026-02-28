@@ -1,229 +1,90 @@
-# ReliefRouter (BanjirAid)
+BanjirAid (Flood Emergency Triage & Dispatch)
+🛠️ Technical Architecture
+The system utilizes a modern cloud-native architecture.
 
-Flood Emergency Triage & Dispatch System with AI-powered assistance for efficient search and rescue operations.
 
-## Features
+Frontend: Built using Flutter/Web for cross-platform compatibility.
 
-### Role-Based Access Control
-The app automatically routes users to different interfaces based on their email:
 
-- **@admin emails** → Admin Dashboard (Full system oversight)
-- **@rescue emails** → Rescue Team Dashboard (Field operations)
-- **Regular emails (e.g., @gmail.com)** → Citizen Interface (Submit help requests)
+Backend: Firebase handles authentication, real-time database (Firestore), and serverless hosting.
 
-### Three Distinct Interfaces
 
-#### 1. Citizen Interface
-- Submit help requests with detailed information
-- GPS location capture or manual landmark entry
-- Track submitted requests
-- View request status updates
-- Safety tips and emergency contacts
+AI Engine: Google Cloud Functions are triggered by new database entries to call the Gemini API for triage and processing.
 
-#### 2. Rescue Team Dashboard
-- View all tickets in real-time
-- Filter by status (New, Assigned, En Route, Resolved)
-- Filter by priority (P1, P2, P3)
-- Update ticket status
-- Assign tickets to themselves
-- Mark progress (Assigned → En Route → Resolved)
+💻 Implementation Details
+The core logic resides within the Firebase Cloud Functions and Firestore data model.
 
-#### 3. Admin Dashboard
-- Complete system overview with statistics
-- Manage all tickets (view, edit, delete)
-- Search and filter functionality
-- Analytics dashboard
-- Settings for teams, zones, and permissions
-- Audit logs
 
-## Setup Instructions
+AI Triage: Upon receiving a raw report, Gemini extracts structured data, assigns a priority level (P1-P3), and detects potential duplicates .
++2
 
-### Prerequisites
-- Flutter SDK (3.0.0 or higher)
-- Firebase account
-- Android Studio / VS Code
-- Git
 
-### Installation Steps
+Routing: Tickets are auto-routed to responder teams based on AI analysis; abnormal cases are flagged for supervisor review .
++1
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd relief_router
-   ```
 
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+Data Model: The system stores Tickets, Locations, Team data, and User roles within Firestore to manage the workflow lifecycle from new requests to resolution .
++1
 
-3. **Firebase Setup**
-   
-   a. Create a new Firebase project at https://console.firebase.google.com
-   
-   b. Enable the following services:
-      - Authentication (Email/Password)
-      - Cloud Firestore
-   
-   c. Download configuration files:
-      - For Android: `google-services.json` → `android/app/`
-      - For iOS: `GoogleService-Info.plist` → `ios/Runner/`
-   
-   d. Update Firebase configuration in your project
+⚠️ Challenges Faced
 
-4. **Configure Firestore Security Rules**
-   
-   Go to Firestore → Rules and add:
-   ```
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /tickets/{ticket} {
-         allow read: if request.auth != null;
-         allow create: if request.auth != null;
-         allow update: if request.auth != null && 
-                       (request.auth.token.email.matches('.*@admin.*') || 
-                        request.auth.token.email.matches('.*@rescue.*'));
-         allow delete: if request.auth != null && 
-                       request.auth.token.email.matches('.*@admin.*');
-       }
-     }
-   }
-   ```
+Data Scarcity: Managing reports with intermittent mobile data and missing GPS necessitated a reliable landmark-based location fallback system .
 
-5. **Android Permissions**
-   
-   Add to `android/app/src/main/AndroidManifest.xml`:
-   ```xml
-   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-   <uses-permission android:name="android.permission.INTERNET" />
-   ```
 
-6. **iOS Permissions**
-   
-   Add to `ios/Runner/Info.plist`:
-   ```xml
-   <key>NSLocationWhenInUseUsageDescription</key>
-   <string>We need your location to help rescue teams find you</string>
-   <key>NSLocationAlwaysUsageDescription</key>
-   <string>We need your location to help rescue teams find you</string>
-   ```
+Unstructured Input: Reports are often high-volume, messy, incomplete, and multilingual (Malay + English mixed).
++1
 
-7. **Run the app**
-   ```bash
-   flutter run
-   ```
 
-## Test Accounts
+Latency: Meeting a median time of less than 10 seconds from report submission to AI triage output requires efficient cloud function execution.
 
-Create test accounts with these email formats:
+🚀 Future Roadmap
 
-### Admin Account
-- Email: `admin@admin.com`
-- Password: `admin123`
+Offline Capability: Implement full offline mesh networking to allow reporting when data networks are completely down.
 
-### Rescue Team Account
-- Email: `team1@rescue.com`
-- Password: `rescue123`
 
-### Citizen Account
-- Email: `citizen@gmail.com`
-- Password: `citizen123`
+IoT Integration: Incorporate hardware IoT sensors for automatic flood level monitoring.
 
-## Project Structure
 
-```
-lib/
-├── main.dart                          # App entry point with role routing
-├── services/
-│   └── auth_service.dart             # Authentication & role detection
-├── screens/
-│   ├── auth/
-│   │   ├── login_screen.dart         # Login page
-│   │   └── register_screen.dart      # Registration page
-│   ├── citizen/
-│   │   ├── citizen_home_screen.dart  # Citizen dashboard
-│   │   ├── submit_request_screen.dart # Submit help request
-│   │   └── my_requests_screen.dart   # View submitted requests
-│   ├── responder/
-│   │   └── responder_dashboard.dart  # Rescue team interface
-│   └── admin/
-│       └── admin_dashboard.dart      # Admin control panel
-```
+Advanced Routing: Develop automated vehicle routing with live traffic optimization for field responders.
 
-## Data Model
+⚙️ Project Setup and Launch Guide
+Follow these steps to set up the local development environment and launch the application after pulling the repository.
 
-### Ticket Fields
-- `ticket_id`: Unique identifier
-- `status`: new, triaged, assigned, en_route, resolved, closed
-- `priority`: p1, p2, p3 (set by AI triage)
-- `incident_type`: rescue, medical, supplies, hazard, information
-- `raw_message`: User's description
-- `location_text`: Landmark or address
-- `gps_lat`, `gps_lng`: GPS coordinates
-- `people_count`: Number of affected people
-- `vulnerable_people`: Boolean for elderly/disabled/infants
-- `injuries`: yes/no/unknown
-- `water_level`: ankle/knee/waist/chest/roof/unknown
-- `reporter_email`: User's email
-- `created_at`, `updated_at`: Timestamps
+1. Prerequisites
+Ensure you have the following installed:
 
-## Key Features
+Flutter SDK
 
-### For Citizens
-- ✅ Quick emergency request submission
-- ✅ Category-based incident types
-- ✅ GPS location or manual entry
-- ✅ Real-time request tracking
-- ✅ Safety guidelines
-- ✅ Emergency contacts
+Node.js and npm
 
-### For Rescue Teams
-- ✅ Live ticket queue with filters
-- ✅ Priority-based sorting
-- ✅ Status management
-- ✅ Quick ticket assignment
-- ✅ Progress tracking
-- ✅ Detailed ticket information
+Firebase CLI
 
-### For Admins
-- ✅ System-wide overview
-- ✅ All tickets management
-- ✅ Search and filter
-- ✅ Manual status updates
-- ✅ Ticket deletion
-- ✅ Statistics dashboard
+2. Frontend Setup (Flutter)
+Navigate to the frontend directory and install dependencies:
 
-## Future Enhancements
+Bash
+# Navigate to project root
+cd banjiraid-app
 
-- [ ] AI-powered triage using Gemini API
-- [ ] Automatic duplicate detection
-- [ ] Map view for tickets
-- [ ] Team assignment logic
-- [ ] Push notifications
-- [ ] Offline mode
-- [ ] Multi-language support (Malay/English)
-- [ ] Photo attachments
-- [ ] Advanced analytics
-- [ ] Audit trail
+# Install Flutter dependencies
+flutter pub get
 
-## Tech Stack
+# Run the app locally
+flutter run
+3. Backend Setup (Firebase & Cloud Functions)
+Navigate to the functions directory to configure the AI logic:
 
-- **Frontend**: Flutter
-- **Backend**: Firebase (Authentication, Firestore)
-- **Location**: Geolocator
-- **State Management**: StatefulWidget
-- **Real-time Updates**: Firestore Snapshots
+Bash
+# Navigate to functions directory
+cd functions
 
-## License
+# Install Node.js dependencies
+npm install
+4. Running the Emulator Suite
+To run the full application (Frontend + Firestore + Functions) locally, use the Firebase emulator:
 
-MIT License - See LICENSE file for details
-
-## Support
-
-For issues or questions, please contact the development team.
-
----
-
-**Built for KitaHack - Making Emergency Response More Efficient**
+Bash
+# From project root
+firebase emulators:start
+📜 License
+Distributed under the Apache License 2.0. See LICENSE for more information.
