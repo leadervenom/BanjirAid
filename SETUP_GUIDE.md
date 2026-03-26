@@ -1,4 +1,4 @@
-# ReliefRouter - Complete Setup Guide
+# ReliefRouter - Complete Setup Guide for Developers and Contributers
 
 ## Quick Start Summary
 
